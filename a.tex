@@ -1,0 +1,238 @@
+
+
+\documentclass[11.5 pt]{beamer}
+
+
+\mode<presentation>
+{
+  \usetheme{AnnArbor}
+}
+
+
+\usepackage[english]{babel}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{times}
+\usepackage[T1]{fontenc}
+\usepackage{newtxtext,newtxmath}
+
+
+\title[]
+{El desarrollo económico como nivelación de oportunidades}
+
+\subtitle[]
+{Economic development as opportunity equalization (Roemer, 2006)}
+
+
+\author[]
+{yo}
+
+
+
+
+\date[]
+{Lima, setiembre del 2021}
+
+
+
+
+%	Poner el índice en cada subsección
+
+%\AtBeginSection[]
+%{
+%\begin{frame}<beamer>{Outline}
+%	\tableofcontents[currentsection]
+%\end{frame}
+%}
+
+
+
+
+%	Empezar documento
+\begin{document}
+
+%	Carátula
+\begin{frame}
+  \titlepage
+\end{frame}
+
+%	Índice
+\begin{frame}
+{Índice}
+  \tableofcontents
+\end{frame}
+
+
+
+\section{El desarrollo económico}
+\begin{frame}{El desarrollo económico}
+	\begin{itemize}
+		\item "El desarrollo económico debe ser medido por la medida en la que una sociedad ha logrado una distribución deseable de ventajas" (Roemer, 2013).
+		\item Esta deseabilidad debe incluir ambos, eficiencia y justicia (o equidad)
+		\item Tanto el PIB per cápita como el IDH siguen aprox. una tendencia utilitarista, dado que son promedios de la población completa
+	\end{itemize}
+\end{frame}
+
+
+
+
+\section{Nivelación de oportunidades}
+\begin{frame}{Nivelación de oportunidades}
+\begin{itemize}
+	\item La ventaja que tiene un individuo depende de las oportunidades ($c$), el esfuerzo ($e$) y las políticas del gobierno ($\phi$, seleccionada de un conjunto factible $\Phi$): $u(c, e, \phi)$
+	\item Dividimos la población en T grupos, de manera que todos los individuos de un grupo tuvieron las mismas oportunidades (ej: grado de instrucción de los padres)
+	\item Debido a que no se quiere una igualdad de distribuciones en un nivel bajo, se tiene que maximizar el mínimo:
+\end{itemize}
+\[
+	\max_{\phi \in \Phi} \min_{1 \leq t \leq T} \mu_{t}(\phi)
+\]
+\end{frame}
+
+
+\begin{frame}{Función de distribución acumulada: Dinamarca, 1990}
+	\begin{figure}
+		\includegraphics[scale=0.5]{09}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}{Función de distribución acumulada: España, 1990}
+	\begin{figure}
+		\includegraphics[scale=0.5]{10}
+	\end{figure}
+\end{frame}
+
+
+
+
+\section{Tipos de indicadores}
+\begin{frame}{Igualdad de oportunidades}
+	\begin{itemize}
+		\item Se centra en elegir la política que maximice el valor medio del objetivo \textbf{\textit{en el tipo más desfavorecido}} bajo la política $\phi$ (representado por $\bar{v} (\phi)$)
+	\end{itemize}
+	\begin{equation}
+		W^{EO} (\phi) = \int_{0}^{1} v^{1} (\pi , \phi) \partial \pi \equiv \bar{v} (\phi)
+	\end{equation}
+	\begin{itemize}
+		\item Donde $t = 1$, que representa al tipo menos aventajado, por lo que $v^{t} = v^{1}$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{Utilitarista}
+	\begin{itemize}
+		\item Se centra el valor medio del objetivo \textbf{\textit{en la población}} ($f^{t}$ es la proporción de la población de tipo $t$)
+	\end{itemize}
+	\begin{equation}
+		W^{U} (\phi) = \sum_{t=1}^{T} f^{t} \int_{0}^{1} v^{t} (\pi , \phi) \partial \pi
+	\end{equation}
+	\begin{itemize}
+		\item Esto quiere decir que se maximiza el valor promedio para todos los tipos (todos los elementos en el vector de oportunidades)
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Rawlsiano}
+	\begin{itemize}
+		\item Se centra en el \textbf{\textit{valor mínimo}} del objetivo en la población
+		\item Maximizar una media de un mínimo en todos los niveles de esfuerzo
+	\end{itemize}
+	\begin{equation}
+		W^{R} (\phi) = \min_{\pi , t} v^{t} (\pi , \phi)
+	\end{equation}		
+\end{frame}
+
+
+
+
+
+\section{Caso peruano: Grado de instrucción del padre}
+\begin{frame}
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.47]{01}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.47]{02}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}{Evolución del ingreso medio}
+	\begin{figure}
+		\centering
+		\includegraphics[scale=0.47]{03}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.5]{04}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.5]{05}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.5]{06}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.5]{07}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\begin{figure}
+		\includegraphics[scale=0.45]{08}
+	\end{figure}
+\end{frame}
+
+
+\section{Conclusiones}
+\begin{frame}{Conclusiones}
+	\begin{itemize}
+		\item Esta propuesta es interesante debido a que se centra más en la parte social del bienestar que en la técnica
+		\item Sin embargo, este indicador es muy volatil
+		\item Para el caso del Perú, si bien han habido políticas de ayuda a los menos aventajados, lo que ha tenido "mayor efectividad" ha sido la crisis del 2008
+		\item Si bien el crecimiento promedio del grado de instrucción sin nivel ha crecido más que el promedio, se presume que esto no podría haber sido así de no haberse dado la crisis del 2008
+		\item Los ingresos para todos los tipos han ido creciendo pero sigue habiendo una gran brecha entre ellos, que debe seleccionarse con políticas adecuadas
+	\end{itemize}
+\end{frame}
+
+
+\section{Bibliografía}
+\begin{frame}{Bibliografía}
+	\begin{itemize}
+		\item Roemer, J.E. (2006). Economic Development as Opportunity Equalization. Cowles Foundation Discussion Papers 1583. Cowles Foundation for Research in Economics, Yale University. 
+		\item Roemer, J.E. (2013). Economic Development as Opportunity Equalization. The World Bank Economic Review, 28(2), 189–209. doi:10.1093/wber/lht023 
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
