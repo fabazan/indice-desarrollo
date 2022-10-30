@@ -1466,3 +1466,10 @@ ax.bar_label(rects1)
 fig.tight_layout()
 plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_crecimiento_medio2.png")
 plt.show()
+
+
+
+# plt.bar(gi[:-1], porc_padre_2004)
+# plt.xticks(gi[:-1], [textwrap.fill(i.capitalize(), width=17) for i in gi[:-1]], rotation="vertical", **fuente)
+# plt.subplots_adjust(bottom=0.4, top=0.90)
+# plt.show()
