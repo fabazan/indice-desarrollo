@@ -1473,3 +1473,24 @@ plt.show()
 # plt.xticks(gi[:-1], [textwrap.fill(i.capitalize(), width=17) for i in gi[:-1]], rotation="vertical", **fuente)
 # plt.subplots_adjust(bottom=0.4, top=0.90)
 # plt.show()
+
+
+#     # Grupo 1: Sin nivel
+#     for i in range(inicio, fin + 1):
+#         globals()[f'enaho{i}g1'] = enaho[(enaho['aÑo'] == i) & (enaho['p45_1'] == gi[0])]
+
+#     # Grupo 2: Con primaria
+#     for i in range(inicio, fin + 1):
+#         globals()[f'enaho{i}g2'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[1]) | (enaho['p45_1'] == gi[2]))]
+
+#     # Grupo 3: Con secundaria
+#     for i in range(inicio, fin + 1):
+#         globals()[f'enaho{i}g3'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[3]) | (enaho['p45_1'] == gi[4]))]
+
+#     # Grupo 4: Superior no universitaria
+#     for i in range(inicio, fin + 1):
+#         globals()[f'enaho{i}g4'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[5]) | (enaho['p45_1'] == gi[6]))]
+
+#     # Grupo 5: Superior universitaria
+#     for i in range(inicio, fin + 1):
+#         globals()[f'enaho{i}g5'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[7]) | (enaho['p45_1'] == gi[8]))]
