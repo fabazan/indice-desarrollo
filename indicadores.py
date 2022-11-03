@@ -1494,3 +1494,13 @@ plt.show()
 #     # Grupo 5: Superior universitaria
 #     for i in range(inicio, fin + 1):
 #         globals()[f'enaho{i}g5'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[7]) | (enaho['p45_1'] == gi[8]))]
+
+
+# print(np.average(enaho["ypc"], weights=enaho["factor07"]))
+# print(robustats.weighted_median(enaho["ypc"], weights=enaho["factor07"]))
+# print(newenaho["ypc"].mean())
+# print(newenaho["ypc"].median())
+
+# for i in periodo_i:
+#     enaho.loc[enaho["aÑo"] == i, "fams_w"] = enaho["factor07"][enaho["aÑo"] == i].sum()
+#     enaho.loc[enaho["aÑo"] == i, "muestra"] = enaho[enaho["aÑo"] == i].shape[0]
