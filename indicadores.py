@@ -1504,3 +1504,99 @@ plt.show()
 # for i in periodo_i:
 #     enaho.loc[enaho["aÑo"] == i, "fams_w"] = enaho["factor07"][enaho["aÑo"] == i].sum()
 #     enaho.loc[enaho["aÑo"] == i, "muestra"] = enaho[enaho["aÑo"] == i].shape[0]
+
+
+
+
+
+
+
+
+
+
+
+def porgrupos1():
+# 
+#     # Grupo 1: Sin nivel
+#     g1 = {key: value for (key, value) in
+#           zip([f"{i}g1" for i in periodo_i],
+#               [enaho[(enaho["aÑo"] == i) & (enaho["gimax"] == gi[0])]
+#                for i in periodo_i])}
+# 
+#     # Grupo 2: Con primaria
+#     g2 = {key: value for (key, value) in
+#           zip([f"{i}g2" for i in periodo_i],
+#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[1]) | (enaho["gimax"] == gi[2]))]
+#                for i in periodo_i])}
+# 
+#     # Grupo 3: Con secundaria
+#     g3 = {key: value for (key, value) in
+#           zip([f"{i}g3" for i in periodo_i],
+#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[3]) | (enaho["gimax"] == gi[4]))]
+#                for i in periodo_i])}
+# 
+#     # Grupo 4: Superior no universitaria
+#     g4 = {key: value for (key, value) in
+#           zip([f"{i}g4" for i in periodo_i],
+#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[5]) | (enaho["gimax"] == gi[6]))]
+#                for i in periodo_i])}
+# 
+#     # Grupo 5: Superior universitaria
+#     g5 = {key: value for (key, value) in
+#           zip([f"{i}g5" for i in periodo_i],
+#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[7]) | (enaho["gimax"] == gi[8]))]
+#                for i in periodo_i])}
+# 
+#     enahobygroups = g1 | g2 | g3 | g4 | g5
+# 
+#     df_yfam_medio = pd.DataFrame(
+#         {"Año": periodo_s,
+#          "0": [round(i) for i in [np.average(enahobygroups[f"{i}g1"]["yfam"], weights=enahobygroups[f"{i}g1"]["factor07"]) for i in periodo_i]],
+#          "1": [round(i) for i in [np.average(enahobygroups[f"{i}g2"]["yfam"], weights=enahobygroups[f"{i}g2"]["factor07"]) for i in periodo_i]],
+#          "2": [round(i) for i in [np.average(enahobygroups[f"{i}g3"]["yfam"], weights=enahobygroups[f"{i}g3"]["factor07"]) for i in periodo_i]],
+#          "3": [round(i) for i in [np.average(enahobygroups[f"{i}g4"]["yfam"], weights=enahobygroups[f"{i}g4"]["factor07"]) for i in periodo_i]],
+#          "4": [round(i) for i in [np.average(enahobygroups[f"{i}g5"]["yfam"], weights=enahobygroups[f"{i}g5"]["factor07"]) for i in periodo_i]]})
+# 
+#     plt.figure(figsize=figsizes)
+#     for i in range(len(df_yfam_medio.columns) - 1):
+#         plt.plot(df_yfam_medio["Año"], df_yfam_medio[f"{i}"], label=grupos[i], marker=marcadores[i])
+#     plt.plot(df_yfam_medio["Año"], yfam_medio, label="Ingreso medio")
+#     plt.title("Ingreso medio del hogar por grado de instrucción del padre más instruido del jefe de hogar", **fuente)
+#     plt.xlabel("Año", **fuente)
+#     plt.ylabel("Ingreso mensual familiar (en soles)", **fuente)
+#     plt.xticks(**fuente)
+#     plt.yticks(**fuente)
+#     plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
+#     plt.show()
+# 
+#     f1 = {key: value for (key, value) in
+#           zip([f"padre{i}" for i in periodo_i],
+#               [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_1"] == gi[0]]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[1]) | (enahoyears[f"{i}"]["p45_1"] == gi[2])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[3]) | (enahoyears[f"{i}"]["p45_1"] == gi[4])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[5]) | (enahoyears[f"{i}"]["p45_1"] == gi[6])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[7]) | (enahoyears[f"{i}"]["p45_1"] == gi[8])]["factor07"].sum()]
+#                for i in periodo_i])}
+#     f2 = {key: value for (key, value) in
+#           zip([f"madre{i}" for i in periodo_i],
+#               [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_2"] == gi[0]]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[1]) | (enahoyears[f"{i}"]["p45_2"] == gi[2])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[3]) | (enahoyears[f"{i}"]["p45_2"] == gi[4])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[5]) | (enahoyears[f"{i}"]["p45_2"] == gi[6])]["factor07"].sum(),
+#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[7]) | (enahoyears[f"{i}"]["p45_2"] == gi[8])]["factor07"].sum()]
+#                for i in periodo_i])}
+#     frecuencias = f1 | f2
+# 
+#     p1 = {key: value for (key, value) in
+#           zip([f"padre{i}" for i in periodo_i],
+#               [[round(j*100/sum(frecuencias[f"padre{i}"]), 1) for j in frecuencias[f"padre{i}"]]
+#                for i in periodo_i])}
+#     p2 = {key: value for (key, value) in
+#           zip([f"madre{i}" for i in periodo_i],
+#               [[round(j*100/sum(frecuencias[f"madre{i}"]), 1) for j in frecuencias[f"madre{i}"]]
+#                for i in periodo_i])}
+#     porcentajes = p1 | p2
+# 
+#     barchars(porcentajes, "grupos", grupos)
+
+
