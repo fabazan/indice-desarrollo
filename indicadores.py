@@ -2,1508 +2,526 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as font_manager
+import textwrap
+import weightedstats as ws
 
 
-enaho = pd.read_csv("D:/Universidad/Desarrollo Económico/Construcción de indicadores de desarrollo/sumaria_85_resumen.csv", sep=";", encoding="ANSI", low_memory=False)
-enaho = enaho[["p45_1", "p45_2", "factor07", "mieperho", "inghog1d", "aÑo", "defes"]]
 
-#   p45_1 : Nivel estudios del padre del jefe del hogar
-#   p45_2 : Nivel de estudios de la madre del jefe del hogar
-#   factor07 : Factor de expansión del hogar
-#   mieperho : Miembros por hogar
-#   inghog1d : Ingreso bruto total anual
-#   defes : Deflactor espacial
+pd.set_option('display.max_columns', None)
+
+desktop = "C:/Users/pc/Desktop/"
+
+inicio = 2004
+fin = 2021
+fuente = {'fontname': "Times New Roman"}
 
 
-ypc = [0 for i in range(467204)]
+gi = ["sin nivel",
+      "primaria incompleta", "primaria completa",
+      "secundaria incompleta", "secundaria completa",
+      "superior no universitaria incompleta", "superior no universitaria completa",
+      "superior universitaria incompleta", "superior universitaria completa",
+      "no sabe"]
+grupos = ["Sin nivel", "Primaria", "Secundaria", "Superior no universitaria", "Superior universitaria"]
+grupos2 = ["Sin nivel", "Educación básica", "Educación secundaria", "Educación superior"]
 
-for index, row in enaho.iterrows():
-    ypc[index] = row["inghog1d"]/(row["mieperho"] * row["defes"] * 12)
+departamentos = ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", "Callao", "Cusco",
+                 "Huancavelica", "Huánuco", "Ica", "Junín", "La Libertad", "Lambayeque", "Lima", "Loreto",
+                 "Madre de Dios", "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes",
+                 "Ucayali"]
 
-enaho["ypc"] = ypc
+departamentosISO = ["AMA", "ANC", "APU", "ARE", "CAJ", "CAL", "CUS",
+                    "HUV", "HUC", "ICA", "JUN", "LAL", "LAM", "LIM", "LOR",
+                    "MDD", "MOQ", "PAS", "PIU", "PUN", "SAM", "TAC", "TUM",
+                    "UCA"]
 
+
+
+
+periodo_i = [i for i in range(inicio, fin + 1)]
+periodo_s = [str(i) for i in periodo_i]
+negro = "black"
+color_dict = {'capprops': dict(color=negro),
+              'medianprops': dict(color=negro, linewidth=2),
+              'whiskerprops': dict(color=negro),
+              'meanprops': dict(markeredgecolor=negro, markerfacecolor=negro)}
+marcadores = ["^", "P", "s", "*", "D", "X", "p", "h", "8", "o"]
+colores = [(0.2, 0.2, 0.8, 0.3), (0.2, 0.4, 0.8, 0.3), (0.2, 0.6, 0.8, 0.3), (0.2, 0.8, 0.8, 0.3)]
+figsizes = (10, 5.7)
+source = "Fuente: Elaboración propia a partir de datos del Instituto Nacional de Estadística e Informática (INEI)"
+source_pos = (0.08, 0.01)
+
+
+enaho = pd.read_csv(desktop + "data_indic.csv",
+                    sep=";", encoding="ANSI", low_memory=False)
+
+
+enaho = enaho[["p45_1", "p45_2", "factor07", "mieperho", "inghog1d", "aÑo", "defes", "dept"]]
+enaho["yfam"] = enaho["inghog1d"]/(enaho["defes"] * 12)
+# enaho["factorper"] = enaho["factor07"]*enaho["mieperho"]
+
+#    Variables usadas
+#        p45_1: Nivel estudios del padre del jefe del hogar
+#        p45_2: Nivel de estudios de la madre del jefe del hogar
+#     factor07: Factor de expansión del hogar
+#     mieperho: Miembros por hogar
+#     inghog1d: Ingreso bruto total anual
+#        defes: Deflactor espacial
 
 #     Listas para ingresos medios por grado de instrucción
-#     0 : sin nivel
-#     1 : primaria incompleta
-#     2 : primaria completa
-#     3 : secundaria incompleta
-#     4 : secundaria completa
-#     5 : superior no universitaria incompleta
-#     6 : superior no universitaria incompleta
-#     7 : superior universitaria incompleta
-#     8 : superior universitaria completa
-#     9 : no sabe
-#     10 : vacio
-gi = ["sin nivel", "primaria incompleta", "primaria completa", "secundaria incompleta", "secundaria completa", "superior no universitaria incompleta",
-      "superior no universitaria completa", "superior universitaria incompleta", "superior universitaria completa", "no sabe"]
+#      0: sin nivel
+#      1: primaria incompleta
+#      2: primaria completa
+#      3: secundaria incompleta
+#      4: secundaria completa
+#      5: superior no universitaria incompleta
+#      6: superior no universitaria incompleta
+#      7: superior universitaria incompleta
+#      8: superior universitaria completa
+#      9: no sabe
+#     10: vacío
 
-ypc_gi_p = [[[] for i in range(17)] for j in range(11)]
 
-for index, row in enaho.iterrows():
-    if row["aÑo"] == 2004:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][0].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][0].append(round(row["ypc"], 2))
+gi_dict = {key: value for (key, value) in zip(gi, [i for i in range(0, len(gi) - 1)])}
+enaho["padre"] = enaho["p45_1"].map(gi_dict)
+enaho["madre"] = enaho["p45_2"].map(gi_dict)
+enaho["gimax"] = enaho[["padre", "madre"]].max(axis=1)
+enaho["gimax"] = enaho["gimax"].map({key: value for (key, value) in zip(gi_dict.values(), gi_dict.keys())})
+
+enaho = enaho.drop(["padre", "madre"], axis=1)
+enahoyears = {key: value for (key, value) in zip([f"{i}" for i in range(inicio, fin + 1)], [enaho[enaho['aÑo'] == i] for i in range(inicio, fin + 1)])}
+
+
+muestra = pd.DataFrame({"Año": periodo_i,
+                        "Muestra": [enaho[enaho['aÑo'] == i].shape[0] for i in periodo_i],
+                        "Población": [round(enahoyears[f'{i}']['factor07'].sum()) for i in periodo_i]})
+
+# print(muestra)
+# muestra.to_csv(desktop + "poblacion.csv", sep=";", encoding="ANSI")
+
+yfam_medio = [round(np.average(enahoyears[f"{i}"]["yfam"], weights=enahoyears[f"{i}"]["factor07"])) for i in periodo_i]
+yfam_mediano = [round(ws.weighted_median(enahoyears[f"{i}"]["yfam"], weights=enahoyears[f"{i}"]["factor07"])) for i in periodo_i]
+
+# pd.DataFrame({"Año": periodo_i,
+#               "Ingreso medio": yfam_medio,
+#               "Ingreso mediano": yfam_mediano}).to_csv(desktop + "ymediomediano.csv", sep=";")
+
+
+def reindex_df(dataframe, weight):
+    dataframe = dataframe.reindex(dataframe.index.repeat(dataframe[weight]))
+    dataframe.reset_index(drop=True, inplace=True)
+    return dataframe["yfam"]
+
+
+plt.figure(figsize=figsizes)
+caja = plt.boxplot([reindex_df(enahoyears[f"{i}"], weight="factor07") for i in periodo_i],
+                   showmeans=True, showfliers=False, showbox=True, showcaps=True, whis=3, **color_dict)
+plt.legend([caja['medians'][0], caja['means'][0]], ['Ingreso mediano', 'Ingreso medio'],
+           prop=font_manager.FontProperties(family=fuente["fontname"]))
+# Ingreso medio
+plt.plot([f"{inicio - 1}", f"{inicio}"], [yfam_medio[0], yfam_medio[1]], alpha=0)
+for i in range(len(periodo_s) - 1):
+    plt.plot([f"{periodo_s[i]}", f"{periodo_s[i + 1]}"], [yfam_medio[i], yfam_medio[i + 1]], negro, linestyle="dashed", linewidth=0.9)
+# Ingreso mediano
+plt.plot([f"{inicio - 1}", f"{inicio}"], [yfam_mediano[0], yfam_mediano[1]], alpha=0)
+for i in range(len(periodo_s) - 1):
+    plt.plot([f"{periodo_s[i]}", f"{periodo_s[i + 1]}"], [yfam_mediano[i], yfam_mediano[i + 1]], negro, linestyle="dashed", linewidth=0.9)
+plt.xticks([i for i in range(1, len(periodo_s) + 1)], periodo_s, **fuente)
+plt.yticks(**fuente)
+plt.xlim([f"{inicio-1}", f"{fin+1}"])
+plt.title(f"Ingreso familiar de la población peruana, {inicio}-{fin}", **fuente)
+plt.xlabel("Año", **fuente)
+plt.ylabel("Ingreso mensual familiar (en soles)", **fuente)
+plt.grid()
+plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+plt.subplots_adjust(bottom=0.12)
+plt.savefig(desktop + f"imagenes/boxplot.png", bbox_inches='tight')
+# plt.show()
+plt.close()
+
+
+def barchars(porcentajes, agrupado, labels, width=0.35):
+    x = np.arange(len(labels))
+    for j in ["padre", "madre"]:
+        if j == "padre":
+            colores1 = (0.1, 0.3, 0.8, 0.5)
+            colores2 = (0.1, 0.3, 0.8, 0.8)
+            k = "del"
         else:
-            ypc_gi_p[10][0].append(round(row["ypc"], 2))
+            colores1 = (0.4, 0.2, 0.6, 0.3)
+            colores2 = (0.4, 0.2, 0.6, 0.6)
+            k = "de la"
+        for i in range(2020, 2021 + 1):
+            fig, ax = plt.subplots()
+            fig.set_size_inches(figsizes[0], figsizes[1])
+            rects1 = ax.bar(x - width / 2, porcentajes[f"{j}2004"], width, label=f'{periodo_s[0]}', color=colores1)
+            rects2 = ax.bar(x + width / 2, porcentajes[f"{j}{i}"], width, label=f'{i}', color=colores2)
+            plt.title(f"Grado de instrucción {k} {j} del jefe de hogar, {periodo_s[0]} vs. {i}", **fuente)
+            plt.xlabel("Grado de instrucción", **fuente)
+            plt.ylabel("% de las familias", **fuente)
+            plt.xticks(x, [textwrap.fill(m.capitalize(), width=16) for m in labels], **fuente)
+            plt.yticks(**fuente)
+            ax.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
+            ax.bar_label(rects1, padding=3, **fuente)
+            ax.bar_label(rects2, padding=3, **fuente)
+            fig.tight_layout()
+            plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+            plt.subplots_adjust(bottom=0.18)
+            plt.savefig(desktop + f"/imagenes/barras{agrupado}{j}{i}.png", bbox_inches='tight')
+            # plt.show()
+            plt.close()
 
-    elif row["aÑo"] == 2005:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][1].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][1].append(round(row["ypc"], 2))
+
+def weighted_vals(valores, pesos):
+    average = np.average(valores, weights=pesos)
+    variance = np.average((valores-average)**2, weights=pesos)
+    return average, variance
+
+
+def etas_f(enahobygroups, etas, j, departamentos, dept_i, dept=False):
+    # media de tipos
+    medias = []
+    # ponderación de tipos
+    fs = []
+
+    for i in range(len(grupos2)):
+        if dept is True:
+            data = enahobygroups[f"{j}g{i + 1}"][enahobygroups[f"{j}g{i + 1}"]["dept"] == departamentos[dept_i]]
+
         else:
-            ypc_gi_p[10][1].append(round(row["ypc"], 2))
+            data = enahobygroups[f"{j}g{i + 1}"]
 
-    elif row["aÑo"] == 2006:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][2].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][2].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][2].append(round(row["ypc"], 2))
+        media = weighted_vals(data["yfam"], pesos=data["factor07"])[0]
+        medias.append(media)
+        f = data.shape[0]
+        fs.append(f)
 
-    elif row["aÑo"] == 2007:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][3].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][3].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][3].append(round(row["ypc"], 2))
+    fs = [i / sum(fs) for i in fs]
 
-    elif row["aÑo"] == 2008:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][4].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][4].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][4].append(round(row["ypc"], 2))
+    # media y varianza de ingreso familiar
+    if dept is True:
+        data2 = enahoyears[str(j)][enahoyears[str(j)]["dept"] == departamentos[dept_i]]
+        # print(data2.head())
+    else:
+        data2 = enahoyears[str(j)]
+    media_muestral, var_muestral = weighted_vals(data2["yfam"], pesos=data2["factor07"])
 
-    elif row["aÑo"] == 2009:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][5].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][5].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][5].append(round(row["ypc"], 2))
+    var_phi = [((medias[i] - media_muestral) ** 2) * fs[i] for i in range(len(grupos2))]
+    var_phi = sum(var_phi)
 
-    elif row["aÑo"] == 2010:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][6].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][6].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][6].append(round(row["ypc"], 2))
+    var_H = var_muestral
 
-    elif row["aÑo"] == 2011:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][7].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][7].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][7].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2012:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][8].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][8].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][8].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2013:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][9].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][9].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][9].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2014:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][10].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][10].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][10].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2015:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][11].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][11].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][11].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2016:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][12].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][12].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][12].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2017:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][13].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][13].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][13].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2018:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][14].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][14].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][14].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2019:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][15].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][15].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][15].append(round(row["ypc"], 2))
-
-    elif row["aÑo"] == 2020:
-        if row["p45_1"] == gi[0]:
-            ypc_gi_p[0][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[1]:
-            ypc_gi_p[1][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[2]:
-            ypc_gi_p[2][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[3]:
-            ypc_gi_p[3][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[4]:
-            ypc_gi_p[4][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[5]:
-            ypc_gi_p[5][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[6]:
-            ypc_gi_p[6][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[7]:
-            ypc_gi_p[7][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[8]:
-            ypc_gi_p[8][16].append(round(row["ypc"], 2))
-        elif row["p45_1"] == gi[9]:
-            ypc_gi_p[9][16].append(round(row["ypc"], 2))
-        else:
-            ypc_gi_p[10][16].append(round(row["ypc"], 2))
+    eta = 1 - var_phi / var_H
+    etas.append(eta)
+    return etas, medias
 
 
-#   Ingreso medio por grado de instrucción para los años - 2004-2020
-#   ypc[grado][año]
-ypc_media = [[] for i in range(11)]
-for j in range(11):
-    for i in range(17):
-        media = sum(ypc_gi_p[j][i])/len(ypc_gi_p[j][i])
-        ypc_media[j].append(round(media, 2))
 
 
-frec_p = [[0 for i in range(11)] for j in range(17)]
-frec_m = [[0 for e in range(11)] for f in range(17)]
+
+def porgi():
+    enahobygi = {key: value for (key, value) in zip([f"{i}p{j}" for i in periodo_i for j in range(len(gi) - 1)], [enaho[(enaho['aÑo'] == i) & (enaho["gimax"] == gi[j])] for i in periodo_i for j in range(len(gi) - 1)])}
+
+    df_yfam_medio = pd.DataFrame(
+        {"Año": periodo_s,
+         "0": [round(i) for i in [np.average(enahobygi[f"{i}p0"]["yfam"], weights=enahobygi[f"{i}p0"]["factor07"]) for i in periodo_i]],
+         "1": [round(i) for i in [np.average(enahobygi[f"{i}p1"]["yfam"], weights=enahobygi[f"{i}p1"]["factor07"]) for i in periodo_i]],
+         "2": [round(i) for i in [np.average(enahobygi[f"{i}p2"]["yfam"], weights=enahobygi[f"{i}p2"]["factor07"]) for i in periodo_i]],
+         "3": [round(i) for i in [np.average(enahobygi[f"{i}p3"]["yfam"], weights=enahobygi[f"{i}p3"]["factor07"]) for i in periodo_i]],
+         "4": [round(i) for i in [np.average(enahobygi[f"{i}p4"]["yfam"], weights=enahobygi[f"{i}p4"]["factor07"]) for i in periodo_i]],
+         "5": [round(i) for i in [np.average(enahobygi[f"{i}p5"]["yfam"], weights=enahobygi[f"{i}p5"]["factor07"]) for i in periodo_i]],
+         "6": [round(i) for i in [np.average(enahobygi[f"{i}p6"]["yfam"], weights=enahobygi[f"{i}p6"]["factor07"]) for i in periodo_i]],
+         "7": [round(i) for i in [np.average(enahobygi[f"{i}p7"]["yfam"], weights=enahobygi[f"{i}p7"]["factor07"]) for i in periodo_i]],
+         "8": [round(i) for i in [np.average(enahobygi[f"{i}p8"]["yfam"], weights=enahobygi[f"{i}p8"]["factor07"]) for i in periodo_i]]})
+
+    # Ingreso medio
+    plt.figure(figsize=figsizes)
+    for i in range(len(df_yfam_medio.columns) - 1):
+        plt.plot(df_yfam_medio["Año"], df_yfam_medio[f"{i}"], label=gi[i].capitalize(), marker=marcadores[i], alpha=0.7, linestyle="dashed")
+    plt.plot(df_yfam_medio["Año"], yfam_medio, negro, linewidth=3, label="Ingreso medio", marker="o", alpha=0.6)
+    plt.title(f"Ingreso medio familiar por grado de instrucción del padre más instruido del jefe de hogar, {inicio}-{fin}", **fuente)
+    plt.xlabel("Año", **fuente)
+    plt.ylabel("Ingreso mensual familiar (en soles)", **fuente)
+    plt.xticks(**fuente)
+    plt.yticks(**fuente)
+    plt.ylim([-100, 8200])
+    plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"], size=8))
+    plt.grid()
+    plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+    plt.subplots_adjust(bottom=0.12)
+    plt.savefig(desktop + f"/imagenes/ingresomediogi.png", bbox_inches='tight')
+    # plt.show()
+    plt.close()
+
+    f1 = {key: value for (key, value) in zip([f"padre{i}" for i in periodo_i], [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_1"] == j]["factor07"].sum() for j in gi[:-1]] for i in periodo_i])}
+    f2 = {key: value for (key, value) in zip([f"madre{i}" for i in periodo_i], [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_2"] == j]["factor07"].sum() for j in gi[:-1]] for i in periodo_i])}
+    frecuencias = f1 | f2
+
+    p1 = {key: value for (key, value) in zip([f"padre{i}" for i in periodo_i], [[round(j*100/sum(frecuencias[f"padre{i}"]), 1) for j in frecuencias[f"padre{i}"]] for i in periodo_i])}
+    p2 = {key: value for (key, value) in zip([f"madre{i}" for i in periodo_i], [[round(j*100/sum(frecuencias[f"madre{i}"]), 1) for j in frecuencias[f"madre{i}"]] for i in periodo_i])}
+    porcentajes = p1 | p2
+
+    barchars(porcentajes, "gi", gi[:-1])
 
 
-#   index = fila, row = columna
-#   suma de personas que cumplan las condiciones (con el factor de expansion por persona)
-#   (a cuantos representa cada persona)
-for index, row in enaho.iterrows():
-    if row["aÑo"] == 2004:
-        if row["p45_1"] == "sin nivel":
-            frec_p[0][0] = round(frec_p[0][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[0][1] = round(frec_p[0][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[0][2] = round(frec_p[0][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[0][3] = round(frec_p[0][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[0][4] = round(frec_p[0][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[0][5] = round(frec_p[0][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[0][6] = round(frec_p[0][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[0][7] = round(frec_p[0][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[0][8] = round(frec_p[0][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[0][9] = round(frec_p[0][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[0][10] = round(frec_p[0][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[0][0] = round(frec_m[0][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[0][1] = round(frec_m[0][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[0][2] = round(frec_m[0][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[0][3] = round(frec_m[0][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[0][4] = round(frec_m[0][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[0][5] = round(frec_m[0][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[0][6] = round(frec_m[0][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[0][7] = round(frec_m[0][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[0][8] = round(frec_m[0][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[0][9] = round(frec_m[0][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[0][10] = round(frec_m[0][10] + row["factor07"]*row["mieperho"])
+def porgrupos():
 
-    elif row["aÑo"] == 2005:
-        if row["p45_1"] == "sin nivel":
-            frec_p[1][0] = round(frec_p[1][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[1][1] = round(frec_p[1][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[1][2] = round(frec_p[1][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[1][3] = round(frec_p[1][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[1][4] = round(frec_p[1][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[1][5] = round(frec_p[1][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[1][6] = round(frec_p[1][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[1][7] = round(frec_p[1][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[1][8] = round(frec_p[1][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[1][9] = round(frec_p[1][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[1][10] = round(frec_p[1][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[1][0] = round(frec_m[1][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[1][1] = round(frec_m[1][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[1][2] = round(frec_m[1][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[1][3] = round(frec_m[1][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[1][4] = round(frec_m[1][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[1][5] = round(frec_m[1][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[1][6] = round(frec_m[1][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[1][7] = round(frec_m[1][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[1][8] = round(frec_m[1][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[1][9] = round(frec_m[1][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[1][10] = round(frec_m[1][10] + row["factor07"]*row["mieperho"])
+    # Grupo 1: Sin nivel
+    g1 = {key: value for (key, value) in zip([f"{i}g1" for i in periodo_i], [enaho[(enaho["aÑo"] == i) & (enaho["gimax"] == gi[0])] for i in periodo_i])}
 
-    elif row["aÑo"] == 2006:
-        if row["p45_1"] == "sin nivel":
-            frec_p[2][0] = round(frec_p[2][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[2][1] = round(frec_p[2][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[2][2] = round(frec_p[2][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[2][3] = round(frec_p[2][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[2][4] = round(frec_p[2][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[2][5] = round(frec_p[2][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[2][6] = round(frec_p[2][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[2][7] = round(frec_p[2][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[2][8] = round(frec_p[2][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[2][9] = round(frec_p[2][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[2][10] = round(frec_p[2][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[2][0] = round(frec_m[2][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[2][1] = round(frec_m[2][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[2][2] = round(frec_m[2][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[2][3] = round(frec_m[2][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[2][4] = round(frec_m[2][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[2][5] = round(frec_m[2][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[2][6] = round(frec_m[2][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[2][7] = round(frec_m[2][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[2][8] = round(frec_m[2][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[2][9] = round(frec_m[2][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[2][10] = round(frec_m[2][10] + row["factor07"]*row["mieperho"])
+    # Grupo 2: Educación primaria
+    g2 = {key: value for (key, value) in zip([f"{i}g2" for i in periodo_i], [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[1]) | (enaho["gimax"] == gi[2]))] for i in periodo_i])}
 
-    elif row["aÑo"] == 2007:
-        if row["p45_1"] == "sin nivel":
-            frec_p[3][0] = round(frec_p[3][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[3][1] = round(frec_p[3][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[3][2] = round(frec_p[3][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[3][3] = round(frec_p[3][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[3][4] = round(frec_p[3][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[3][5] = round(frec_p[3][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[3][6] = round(frec_p[3][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[3][7] = round(frec_p[3][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[3][8] = round(frec_p[3][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[3][9] = round(frec_p[3][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[3][10] = round(frec_p[3][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[3][0] = round(frec_m[3][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[3][1] = round(frec_m[3][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[3][2] = round(frec_m[3][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[3][3] = round(frec_m[3][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[3][4] = round(frec_m[3][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[3][5] = round(frec_m[3][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[3][6] = round(frec_m[3][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[3][7] = round(frec_m[3][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[3][8] = round(frec_m[3][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[3][9] = round(frec_m[3][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[3][10] = round(frec_m[3][10] + row["factor07"]*row["mieperho"])
+    # Grupo 3: Educación secundaria
+    g3 = {key: value for (key, value) in zip([f"{i}g3" for i in periodo_i], [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[3]) | (enaho["gimax"] == gi[4]))] for i in periodo_i])}
 
-    elif row["aÑo"] == 2008:
-        if row["p45_1"] == "sin nivel":
-            frec_p[4][0] = round(frec_p[4][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[4][1] = round(frec_p[4][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[4][2] = round(frec_p[4][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[4][3] = round(frec_p[4][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[4][4] = round(frec_p[4][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[4][5] = round(frec_p[4][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[4][6] = round(frec_p[4][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[4][7] = round(frec_p[4][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[4][8] = round(frec_p[4][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[4][9] = round(frec_p[4][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[4][10] = round(frec_p[4][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[4][0] = round(frec_m[4][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[4][1] = round(frec_m[4][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[4][2] = round(frec_m[4][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[4][3] = round(frec_m[4][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[4][4] = round(frec_m[4][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[4][5] = round(frec_m[4][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[4][6] = round(frec_m[4][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[4][7] = round(frec_m[4][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[4][8] = round(frec_m[4][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[4][9] = round(frec_m[4][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[4][10] = round(frec_m[4][10] + row["factor07"]*row["mieperho"])
+    # Grupo 4: Educación superior
+    g4 = {key: value for (key, value) in zip([f"{i}g4" for i in periodo_i], [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[5]) | (enaho["gimax"] == gi[6]) | (enaho["gimax"] == gi[7]) | (enaho["gimax"] == gi[8]))] for i in periodo_i])}
 
-    elif row["aÑo"] == 2009:
-        if row["p45_1"] == "sin nivel":
-            frec_p[5][0] = round(frec_p[5][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[5][1] = round(frec_p[5][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[5][2] = round(frec_p[5][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[5][3] = round(frec_p[5][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[5][4] = round(frec_p[5][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[5][5] = round(frec_p[5][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[5][6] = round(frec_p[5][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[5][7] = round(frec_p[5][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[5][8] = round(frec_p[5][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[5][9] = round(frec_p[5][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[5][10] = round(frec_p[5][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[5][0] = round(frec_m[5][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[5][1] = round(frec_m[5][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[5][2] = round(frec_m[5][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[5][3] = round(frec_m[5][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[5][4] = round(frec_m[5][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[5][5] = round(frec_m[5][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[5][6] = round(frec_m[5][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[5][7] = round(frec_m[5][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[5][8] = round(frec_m[5][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[5][9] = round(frec_m[5][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[5][10] = round(frec_m[5][10] + row["factor07"]*row["mieperho"])
+    enahobygroups = g1 | g2 | g3 | g4
 
-    elif row["aÑo"] == 2010:
-        if row["p45_1"] == "sin nivel":
-            frec_p[6][0] = round(frec_p[6][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[6][1] = round(frec_p[6][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[6][2] = round(frec_p[6][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[6][3] = round(frec_p[6][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[6][4] = round(frec_p[6][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[6][5] = round(frec_p[6][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[6][6] = round(frec_p[6][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[6][7] = round(frec_p[6][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[6][8] = round(frec_p[6][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[6][9] = round(frec_p[6][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[6][10] = round(frec_p[6][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[6][0] = round(frec_m[6][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[6][1] = round(frec_m[6][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[6][2] = round(frec_m[6][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[6][3] = round(frec_m[6][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[6][4] = round(frec_m[6][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[6][5] = round(frec_m[6][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[6][6] = round(frec_m[6][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[6][7] = round(frec_m[6][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[6][8] = round(frec_m[6][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[6][9] = round(frec_m[6][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[6][10] = round(frec_m[6][10] + row["factor07"]*row["mieperho"])
+    df_yfam_medio = pd.DataFrame(
+        {"Año": periodo_s,
+         "0": [round(i) for i in [np.average(enahobygroups[f"{i}g1"]["yfam"], weights=enahobygroups[f"{i}g1"]["factor07"]) for i in periodo_i]],
+         "1": [round(i) for i in [np.average(enahobygroups[f"{i}g2"]["yfam"], weights=enahobygroups[f"{i}g2"]["factor07"]) for i in periodo_i]],
+         "2": [round(i) for i in [np.average(enahobygroups[f"{i}g3"]["yfam"], weights=enahobygroups[f"{i}g3"]["factor07"]) for i in periodo_i]],
+         "3": [round(i) for i in [np.average(enahobygroups[f"{i}g4"]["yfam"], weights=enahobygroups[f"{i}g4"]["factor07"]) for i in periodo_i]]})
 
-    elif row["aÑo"] == 2011:
-        if row["p45_1"] == "sin nivel":
-            frec_p[7][0] = round(frec_p[7][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[7][1] = round(frec_p[7][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[7][2] = round(frec_p[7][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[7][3] = round(frec_p[7][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[7][4] = round(frec_p[7][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[7][5] = round(frec_p[7][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[7][6] = round(frec_p[7][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[7][7] = round(frec_p[7][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[7][8] = round(frec_p[7][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[7][9] = round(frec_p[7][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[7][10] = round(frec_p[7][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[7][0] = round(frec_m[7][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[7][1] = round(frec_m[7][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[7][2] = round(frec_m[7][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[7][3] = round(frec_m[7][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[7][4] = round(frec_m[7][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[7][5] = round(frec_m[7][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[7][6] = round(frec_m[7][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[7][7] = round(frec_m[7][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[7][8] = round(frec_m[7][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[7][9] = round(frec_m[7][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[7][10] = round(frec_m[7][10] + row["factor07"]*row["mieperho"])
+    plt.figure(figsize=figsizes)
+    for i in range(len(df_yfam_medio.columns) - 1):
+        plt.plot(df_yfam_medio["Año"], df_yfam_medio[f"{i}"], label=grupos2[i], marker=marcadores[i], alpha=0.7, linestyle="dashed")
+    plt.plot(df_yfam_medio["Año"], yfam_medio, negro, linewidth=3, label="Ingreso medio", marker="o", alpha=0.6)
+    plt.title(f"Ingreso medio familiar por grado de instrucción del padre más instruido del jefe de hogar, {inicio}-{fin}", **fuente)
+    plt.xlabel("Año", **fuente)
+    plt.ylabel("Ingreso mensual familiar (en soles)", **fuente)
+    plt.xticks(**fuente)
+    plt.yticks(**fuente)
+    plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
+    plt.ylim([-100, 7100])
+    plt.grid()
+    plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+    plt.subplots_adjust(bottom=0.12)
+    plt.savefig(desktop + f"/imagenes/ingresomediogrupos.png", bbox_inches='tight')
+    # plt.show()
+    plt.close()
 
-    elif row["aÑo"] == 2012:
-        if row["p45_1"] == "sin nivel":
-            frec_p[8][0] = round(frec_p[8][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[8][1] = round(frec_p[8][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[8][2] = round(frec_p[8][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[8][3] = round(frec_p[8][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[8][4] = round(frec_p[8][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[8][5] = round(frec_p[8][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[8][6] = round(frec_p[8][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[8][7] = round(frec_p[8][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[8][8] = round(frec_p[8][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[8][9] = round(frec_p[8][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[8][10] = round(frec_p[8][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[8][0] = round(frec_m[8][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[8][1] = round(frec_m[8][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[8][2] = round(frec_m[8][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[8][3] = round(frec_m[8][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[8][4] = round(frec_m[8][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[8][5] = round(frec_m[8][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[8][6] = round(frec_m[8][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[8][7] = round(frec_m[8][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[8][8] = round(frec_m[8][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[8][9] = round(frec_m[8][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[8][10] = round(frec_m[8][10] + row["factor07"]*row["mieperho"])
+    f1 = {key: value for (key, value) in
+          zip([f"padre{i}" for i in periodo_i],
+              [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_1"] == gi[0]]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[1]) | (enahoyears[f"{i}"]["p45_1"] == gi[2])]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[3]) | (enahoyears[f"{i}"]["p45_1"] == gi[4])]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[5]) | (enahoyears[f"{i}"]["p45_1"] == gi[6]) |
+                                   (enahoyears[f"{i}"]["p45_1"] == gi[7]) | (enahoyears[f"{i}"]["p45_1"] == gi[8])]["factor07"].sum()]
+               for i in periodo_i])}
+    f2 = {key: value for (key, value) in
+          zip([f"madre{i}" for i in periodo_i],
+              [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_2"] == gi[0]]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[1]) | (enahoyears[f"{i}"]["p45_2"] == gi[2])]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[3]) | (enahoyears[f"{i}"]["p45_2"] == gi[4])]["factor07"].sum(),
+                enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[5]) | (enahoyears[f"{i}"]["p45_2"] == gi[6]) |
+                                   (enahoyears[f"{i}"]["p45_2"] == gi[7]) | (enahoyears[f"{i}"]["p45_2"] == gi[8])]["factor07"].sum()]
+               for i in periodo_i])}
+    frecuencias = f1 | f2
 
-    elif row["aÑo"] == 2013:
-        if row["p45_1"] == "sin nivel":
-            frec_p[9][0] = round(frec_p[9][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[9][1] = round(frec_p[9][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[9][2] = round(frec_p[9][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[9][3] = round(frec_p[9][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[9][4] = round(frec_p[9][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[9][5] = round(frec_p[9][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[9][6] = round(frec_p[9][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[9][7] = round(frec_p[9][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[9][8] = round(frec_p[9][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[9][9] = round(frec_p[9][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[9][10] = round(frec_p[9][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[9][0] = round(frec_m[9][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[9][1] = round(frec_m[9][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[9][2] = round(frec_m[9][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[9][3] = round(frec_m[9][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[9][4] = round(frec_m[9][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[9][5] = round(frec_m[9][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[9][6] = round(frec_m[9][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[9][7] = round(frec_m[9][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[9][8] = round(frec_m[9][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[9][9] = round(frec_m[9][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[9][10] = round(frec_m[9][10] + row["factor07"]*row["mieperho"])
+    p1 = {key: value for (key, value) in zip([f"padre{i}" for i in periodo_i], [[round(j*100/sum(frecuencias[f"padre{i}"]), 1) for j in frecuencias[f"padre{i}"]] for i in periodo_i])}
+    p2 = {key: value for (key, value) in zip([f"madre{i}" for i in periodo_i], [[round(j*100/sum(frecuencias[f"madre{i}"]), 1) for j in frecuencias[f"madre{i}"]] for i in periodo_i])}
+    porcentajes = p1 | p2
 
-    elif row["aÑo"] == 2014:
-        if row["p45_1"] == "sin nivel":
-            frec_p[10][0] = round(frec_p[10][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[10][1] = round(frec_p[10][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[10][2] = round(frec_p[10][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[10][3] = round(frec_p[10][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[10][4] = round(frec_p[10][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[10][5] = round(frec_p[10][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[10][6] = round(frec_p[10][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[10][7] = round(frec_p[10][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[10][8] = round(frec_p[10][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[10][9] = round(frec_p[10][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[10][10] = round(frec_p[10][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[10][0] = round(frec_m[10][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[10][1] = round(frec_m[10][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[10][2] = round(frec_m[10][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[10][3] = round(frec_m[10][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[10][4] = round(frec_m[10][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[10][5] = round(frec_m[10][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[10][6] = round(frec_m[10][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[10][7] = round(frec_m[10][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[10][8] = round(frec_m[10][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[10][9] = round(frec_m[10][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[10][10] = round(frec_m[10][10] + row["factor07"]*row["mieperho"])
+    barchars(porcentajes, "grupos2", grupos2)
 
-    elif row["aÑo"] == 2015:
-        if row["p45_1"] == "sin nivel":
-            frec_p[11][0] = round(frec_p[11][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[11][1] = round(frec_p[11][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[11][2] = round(frec_p[11][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[11][3] = round(frec_p[11][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[11][4] = round(frec_p[11][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[11][5] = round(frec_p[11][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[11][6] = round(frec_p[11][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[11][7] = round(frec_p[11][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[11][8] = round(frec_p[11][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[11][9] = round(frec_p[11][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[11][10] = round(frec_p[11][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[11][0] = round(frec_m[11][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[11][1] = round(frec_m[11][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[11][2] = round(frec_m[11][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[11][3] = round(frec_m[11][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[11][4] = round(frec_m[11][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[11][5] = round(frec_m[11][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[11][6] = round(frec_m[11][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[11][7] = round(frec_m[11][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[11][8] = round(frec_m[11][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[11][9] = round(frec_m[11][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[11][10] = round(frec_m[11][10] + row["factor07"]*row["mieperho"])
+    etas_dep = []
+    medias_dep = []
+    etas = []
+    for j in periodo_i:
+        # Función de distribución acumulada (CDF)
+        plt.figure(figsize=figsizes)
+        for i in range(len(grupos2)):
+            data = np.array(enahobygroups[f"{j}g{i + 1}"]["yfam"])
+            x = np.sort(data)
+            y = np.arange(len(x)) / float(len(x))
+            plt.plot(x, y, marker='o', label=grupos2[i], color=colores[i])
+        plt.xlabel('Ingreso familiar (en soles)', **fuente)
+        plt.ylabel('Probabilidad', **fuente)
+        plt.title("Perú: Función de distribución acumulada por grado de instrucción del padre más instruido ($G^t_{\phi}$), " + f"{j}", **fuente)
+        plt.xticks(**fuente)
+        plt.yticks(**fuente)
+        plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
+        plt.xlim([0, 10000])
+        plt.grid()
+        plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+        plt.subplots_adjust(bottom=0.12)
+        plt.savefig(desktop + f"/imagenes/cdf{j}.png", bbox_inches='tight')
+        # plt.show()
+        plt.close()
 
-    elif row["aÑo"] == 2016:
-        if row["p45_1"] == "sin nivel":
-            frec_p[12][0] = round(frec_p[12][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[12][1] = round(frec_p[12][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[12][2] = round(frec_p[12][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[12][3] = round(frec_p[12][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[12][4] = round(frec_p[12][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[12][5] = round(frec_p[12][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[12][6] = round(frec_p[12][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[12][7] = round(frec_p[12][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[12][8] = round(frec_p[12][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[12][9] = round(frec_p[12][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[12][10] = round(frec_p[12][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[12][0] = round(frec_m[12][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[12][1] = round(frec_m[12][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[12][2] = round(frec_m[12][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[12][3] = round(frec_m[12][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[12][4] = round(frec_m[12][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[12][5] = round(frec_m[12][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[12][6] = round(frec_m[12][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[12][7] = round(frec_m[12][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[12][8] = round(frec_m[12][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[12][9] = round(frec_m[12][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[12][10] = round(frec_m[12][10] + row["factor07"]*row["mieperho"])
+        # Función inversa
+        plt.figure(figsize=[figsizes[0], figsizes[1]])
+        for i in range(len(grupos2)):
+            data = np.array(enahobygroups[f"{j}g{i + 1}"]["yfam"])
+            x = np.sort(data)
+            y = np.arange(len(x)) / float(len(x))
+            plt.plot(y, x, marker='o', label=grupos2[i], color=colores[i])
+        plt.xlabel('Grado de esfuerzo ($\pi$)', **fuente)
+        plt.ylabel('Ingreso familiar en soles ($v^t$) ', **fuente)
+        plt.title(f'Perú: Función del objetivo dada la política: $v^t(\pi, \phi)$, {j}', **fuente)
+        plt.xticks(**fuente)
+        plt.yticks(**fuente)
+        plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
+        plt.ylim([0, 20000])
+        plt.grid()
+        plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+        plt.subplots_adjust(bottom=0.12)
+        plt.savefig(desktop + f"/imagenes/cdf{j}_2.png", bbox_inches='tight')
+        # plt.show()
+        plt.close()
 
-    elif row["aÑo"] == 2017:
-        if row["p45_1"] == "sin nivel":
-            frec_p[13][0] = round(frec_p[13][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[13][1] = round(frec_p[13][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[13][2] = round(frec_p[13][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[13][3] = round(frec_p[13][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[13][4] = round(frec_p[13][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[13][5] = round(frec_p[13][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[13][6] = round(frec_p[13][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[13][7] = round(frec_p[13][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[13][8] = round(frec_p[13][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[13][9] = round(frec_p[13][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[13][10] = round(frec_p[13][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[13][0] = round(frec_m[13][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[13][1] = round(frec_m[13][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[13][2] = round(frec_m[13][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[13][3] = round(frec_m[13][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[13][4] = round(frec_m[13][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[13][5] = round(frec_m[13][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[13][6] = round(frec_m[13][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[13][7] = round(frec_m[13][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[13][8] = round(frec_m[13][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[13][9] = round(frec_m[13][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[13][10] = round(frec_m[13][10] + row["factor07"]*row["mieperho"])
+        etas = etas_f(enahobygroups, etas, j, departamentos, 1)[0]
 
-    elif row["aÑo"] == 2018:
-        if row["p45_1"] == "sin nivel":
-            frec_p[14][0] = round(frec_p[14][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[14][1] = round(frec_p[14][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[14][2] = round(frec_p[14][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[14][3] = round(frec_p[14][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[14][4] = round(frec_p[14][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[14][5] = round(frec_p[14][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[14][6] = round(frec_p[14][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[14][7] = round(frec_p[14][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[14][8] = round(frec_p[14][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[14][9] = round(frec_p[14][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[14][10] = round(frec_p[14][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[14][0] = round(frec_m[14][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[14][1] = round(frec_m[14][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[14][2] = round(frec_m[14][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[14][3] = round(frec_m[14][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[14][4] = round(frec_m[14][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[14][5] = round(frec_m[14][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[14][6] = round(frec_m[14][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[14][7] = round(frec_m[14][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[14][8] = round(frec_m[14][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[14][9] = round(frec_m[14][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[14][10] = round(frec_m[14][10] + row["factor07"]*row["mieperho"])
-
-    elif row["aÑo"] == 2019:
-        if row["p45_1"] == "sin nivel":
-            frec_p[15][0] = round(frec_p[15][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[15][1] = round(frec_p[15][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[15][2] = round(frec_p[15][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[15][3] = round(frec_p[15][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[15][4] = round(frec_p[15][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[15][5] = round(frec_p[15][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[15][6] = round(frec_p[15][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[15][7] = round(frec_p[15][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[15][8] = round(frec_p[15][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[15][9] = round(frec_p[15][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[15][10] = round(frec_p[15][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[15][0] = round(frec_m[15][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[15][1] = round(frec_m[15][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[15][2] = round(frec_m[15][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[15][3] = round(frec_m[15][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[15][4] = round(frec_m[15][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[15][5] = round(frec_m[15][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[15][6] = round(frec_m[15][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[15][7] = round(frec_m[15][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[15][8] = round(frec_m[15][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[15][9] = round(frec_m[15][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[15][10] = round(frec_m[15][10] + row["factor07"]*row["mieperho"])
-
-    elif row["aÑo"] == 2020:
-        if row["p45_1"] == "sin nivel":
-            frec_p[16][0] = round(frec_p[16][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria incompleta":
-            frec_p[16][1] = round(frec_p[16][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "primaria completa":
-            frec_p[16][2] = round(frec_p[16][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria incompleta":
-            frec_p[16][3] = round(frec_p[16][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "secundaria completa":
-            frec_p[16][4] = round(frec_p[16][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria incompleta":
-            frec_p[16][5] = round(frec_p[16][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior no universitaria completa":
-            frec_p[16][6] = round(frec_p[16][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria incompleta":
-            frec_p[16][7] = round(frec_p[16][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "superior universitaria completa":
-            frec_p[16][8] = round(frec_p[16][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_1"] == "no sabe":
-            frec_p[16][9] = round(frec_p[16][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_p[16][10] = round(frec_p[16][10] + row["factor07"]*row["mieperho"])
-        if row["p45_2"] == "sin nivel":
-            frec_m[16][0] = round(frec_m[16][0] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria incompleta":
-            frec_m[16][1] = round(frec_m[16][1] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "primaria completa":
-            frec_m[16][2] = round(frec_m[16][2] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria incompleta":
-            frec_m[16][3] = round(frec_m[16][3] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "secundaria completa":
-            frec_m[16][4] = round(frec_m[16][4] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria incompleta":
-            frec_m[16][5] = round(frec_m[16][5] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior no universitaria completa":
-            frec_m[16][6] = round(frec_m[16][6] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria incompleta":
-            frec_m[16][7] = round(frec_m[16][7] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "superior universitaria completa":
-            frec_m[16][8] = round(frec_m[16][8] + row["factor07"]*row["mieperho"])
-        elif row["p45_2"] == "no sabe":
-            frec_m[16][9] = round(frec_m[16][9] + row["factor07"]*row["mieperho"])
-        else:
-            frec_m[16][10] = round(frec_m[16][10] + row["factor07"]*row["mieperho"])
+        medias_final = []
+        dep_final = []
+        for h in range(len(departamentos)):
+            dep_final, medias_fin = etas_f(enahobygroups, dep_final, j, departamentos, h, dept=True)
+            medias_final.append(min(medias_fin))
+        etas_dep.append(dep_final)
+        medias_dep.append(medias_final)
 
 
-porcen_p = [[] for i in frec_p]
-porcen_m = [[] for i in frec_m]
+    medias_dep_df = pd.DataFrame({"2004": medias_dep[0], "2005": medias_dep[1], "2006": medias_dep[2], "2007": medias_dep[3],
+                                "2008": medias_dep[4], "2009": medias_dep[5], "2010": medias_dep[6], "2011": medias_dep[7],
+                                "2012": medias_dep[8], "2013": medias_dep[9], "2014": medias_dep[10], "2015": medias_dep[11],
+                                "2016": medias_dep[12], "2017": medias_dep[13], "2018": medias_dep[14], "2019": medias_dep[15],
+                                "2020": medias_dep[16], "2021": medias_dep[17]}, index=departamentos)
 
-#   porcentaje
-#   (frecuencias / suma(frecuencias))*100
-for i in range(len(frec_p)):
-    for j in range(len(frec_p[i])-2):
-        porcen_p[i].append(round((frec_p[i][j])*100/sum(frec_p[i][0:-2]), 2))
+    etas_dep_df = pd.DataFrame({"2004": etas_dep[0], "2005": etas_dep[1], "2006": etas_dep[2], "2007": etas_dep[3],
+                                "2008": etas_dep[4], "2009": etas_dep[5], "2010": etas_dep[6], "2011": etas_dep[7],
+                                "2012": etas_dep[8], "2013": etas_dep[9], "2014": etas_dep[10], "2015": etas_dep[11],
+                                "2016": etas_dep[12], "2017": etas_dep[13], "2018": etas_dep[14], "2019": etas_dep[15],
+                                "2020": etas_dep[16], "2021": etas_dep[17]}, index=departamentos)
 
-for i in range(len(frec_m)):
-    for j in range(len(frec_m[i])-2):
-        porcen_m[i].append(round((frec_m[i][j])*100/sum(frec_m[i][0:-2]), 2))
+    print(etas_dep_df)
+    print(medias_dep_df)
 
-fechas = [2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020]
+    # resultados = pd.DataFrame({"periodos": periodo_i,
+    #                            "etas": etas})
 
-orden = [i+1 for i in range(11)]
-etiquetas = ["sin\nnivel", "prim.\ninc.", "prim.\ncom.", "sec.\ninc.", "sec.\ncomp.", "sup. no\nun. inc.", "sup. no\nun. com.", "sup.\nun. inc.", "sup.\nun. com.", "no sabe", "vacio"]
+    # sns.regplot(data=resultados, x="periodos", y="etas")
+    plt.figure(figsize=(figsizes[0]*1.2, figsizes[1]))
+    plt.plot(periodo_s, etas, "black")
+    plt.title("Perú: Evolución de los grados de equiparación de oportunidades ($\eta$), 2004-2021", **fuente)
+    plt.xlabel('Año', **fuente)
+    plt.ylabel('$\eta$', **fuente)
+    plt.xticks(**fuente)
+    plt.yticks(**fuente)
+    plt.ylim([0.85, 1.05])
+    plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+    plt.subplots_adjust(bottom=0.12)
+    plt.grid()
+    for x, y in zip(periodo_s, etas):
+        label = "{:.5f}".format(y)
 
-sal_min = [460, 460, 500, 530, 550, 550, 580, 675, 750, 750, 750, 750, 850, 850, 930, 930, 930]
-var_pib_pc = [5.4, 6.7, 7.8, 8.4, 0.4, 7.5, 5.5, 5.4, 5.0, 1.4, 2.1, 2.4, 0.7, 2.0, 0.3, -12.4]
+        plt.annotate(label, (x, y), xytext=(0, 10),
+                     textcoords="offset points", ha='center',
+                     arrowprops=dict(arrowstyle="->", color='black'), **fuente)
+    plt.savefig(desktop + f"/imagenes/eta.png", bbox_inches='tight')
+    # plt.show()
+    plt.close()
 
+    for j in periodo_s:
+        dataf = pd.DataFrame({"dep": departamentos,
+                              "dep_df": etas_dep_df[j]})
+        dataf = dataf.sort_values("dep_df")
 
-#   Ingreso en soles por grado de instrucción
-fig = plt.gcf()
-fig.set_size_inches(10, 6.5)
-plt.plot(fechas, ypc_media[0], color=(0.1, 0.3, 0.8, 1), label="Sin nivel")
-plt.plot(fechas, ypc_media[2], color=(0.1, 0.3, 0.8, 0.7), label="Prim. completa")
-plt.plot(fechas, ypc_media[4], color=(0.1, 0.3, 0.8, 0.5), label="Sec. completa")
-plt.plot(fechas, ypc_media[6], color=(0.1, 0.3, 0.8, 0.3), label="Sup. no univ. comp.")
-plt.plot(fechas, ypc_media[8], color=(0.1, 0.3, 0.8, 0.15), label="Sup. uni. comp.")
-plt.plot(fechas, sal_min, linestyle='dashed', marker="o", label="Salario mínimo")
-plt.legend()
-plt.title("Ingreso medio por grado de instrucción del padre")
-plt.xlabel("Año")
-plt.ylabel("En soles del 2007")
-plt.savefig("C:/Users/adswf/Desktop/imagenes/ingreso_por_padre.png")
-plt.show()
-
-ypc_media_var = [[] for i in range(11)]
-for i in range(11):
-    for j in range(16):
-        ypc_media_var[i].append(round((((ypc_media[i][j + 1] - ypc_media[i][j]) * 100) / ypc_media[i][j]), 2))
-
-
-ypc_media_var_0_df = pd.DataFrame(ypc_media_var[0]).rename(columns={0: "A"})
-
-
-#   Variación porcentual (sin nivel vs sin nivel con media movil vs PIB per cápita
-fig = plt.gcf()
-fig.set_size_inches(10, 6.5)
-plt.plot(fechas[1:], ypc_media_var[0], color=(0.1, 0.3, 0.8, 0.3), label="Ingreso medio: Sin nivel")
-plt.plot(fechas[1:], ypc_media_var_0_df["A"].rolling(window=2).mean(), color=(0.1, 0.3, 0.8, 0.8), label="Ingreso medio: Sin nivel MA(2)")
-# plt.plot(fechas[1:], ypc_media_var[4], color=(0.1, 0.3, 0.8, 0.5), label="Sec. completa")
-# plt.plot(fechas[1:], ypc_media_var[8], color=(0.1, 0.3, 0.8, 0.2), label="Sup. uni. comp.")
-plt.plot(fechas[1:], var_pib_pc, linestyle='dashed', marker="o", label="PIB per cápita")
-plt.legend()
-plt.title("Variación porcentual: Ingreso medio (sin nivel) vs. PIB per cápita")
-plt.xlabel("Año")
-plt.ylabel("En variación % con respecto al año anterior")
-plt.savefig("C:/Users/adswf/Desktop/imagenes/ingreso_por_padre_var.png")
-plt.show()
+        plt.figure(figsize=(figsizes[0]*1.2, figsizes[1]*1.5))
+        plt.barh(dataf["dep"], dataf["dep_df"], height=.8, align="center", color=(0.2, 0.4, 0.6, 0.6))
+        plt.title(f"Perú: Grados de equiparación de oportunidades ($\eta$) por departamentos, {j}", **fuente)
+        plt.xlabel('Grado de equiparación de oportunidades: $\eta$', **fuente)
+        plt.ylabel('Departamento', **fuente)
+        plt.xticks(**fuente)
+        plt.yticks(**fuente)
+        plt.xlim([0.75, 1.0])
+        plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+        plt.subplots_adjust(bottom=0.12)
+        plt.grid(axis="x")
+        plt.savefig(desktop + f"/imagenes/eta{j}.png", bbox_inches='tight')
+        # plt.show()
+        plt.close()
 
 
-#   En porcentaje (2004 vs 2020)
-#   padre
-x = np.arange(len(etiquetas[0:-2]))
-width = 0.35
-fig, ax = plt.subplots()
-rects1 = ax.bar(x - width/2, porcen_p[0], width, label='2004', color=(0.1, 0.3, 0.8, 0.5))
-rects2 = ax.bar(x + width/2, porcen_p[16], width, label='2020', color=(0.1, 0.3, 0.8, 0.8))
-fig.set_size_inches(10, 6.5)
-plt.title("Grado de instrucción: Padre 2004 vs. 2020")
-plt.xlabel("Grado de instrucción")
-plt.ylabel("% de la población")
-ax.set_xticks(x)
-ax.set_xticklabels(etiquetas[0:-2])
-ax.legend()
-ax.bar_label(rects1, padding=3)
-ax.bar_label(rects2, padding=3)
-fig.tight_layout()
-plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_porcen_double_2004.png")
-plt.show()
+        m, b = np.polyfit(medias_dep_df[j], etas_dep_df[j], deg=1)
 
-#   madre
-fig, ax = plt.subplots()
-rects1 = ax.bar(x - width/2, porcen_m[0], width, label='2004', color=(0.4, 0.2, 0.6, 0.3))
-rects2 = ax.bar(x + width/2, porcen_m[16], width, label='2020', color=(0.4, 0.2, 0.6, 0.6))
-fig.set_size_inches(10, 6.5)
-plt.title("Grado de instrucción: Madre 2004 vs. 2020")
-plt.xlabel("Grado de instrucción")
-plt.ylabel("% de la población")
-ax.set_xticks(x)
-ax.set_xticklabels(etiquetas[0:-2])
-ax.legend()
-ax.bar_label(rects1, padding=3)
-ax.bar_label(rects2, padding=3)
-fig.tight_layout()
-plt.savefig("C:/Users/adswf/Desktop/imagenes/madre_porcen_double_2004.png")
-plt.show()
+        plt.figure(figsize=(figsizes[0]*1.2, figsizes[1]*1.4))
+        plt.scatter(medias_dep_df[j], etas_dep_df[j], color="black")
+        for i, txt in enumerate(departamentosISO):
+            plt.annotate(txt, (medias_dep_df[j][i], etas_dep_df[j][i]), **fuente)
+        plt.plot(medias_dep_df[j], m * medias_dep_df[j] + b, "black", alpha=0.7, linewidth=1.5)
+        # Perú: Pares ordenados $d = (\hat{W}_i^{EO}, \eta_i)$ por departamentos y regresión lineal
+        plt.title("Perú: Niveles ($\hat{W}_i^{EO}$) y grados ($\eta_i$) de desarrollo por departamentos, " + f"{j}", **fuente)
+        plt.xlabel('Nivel de equiparación de oportunidades: $\hat{W}^{EO}$', **fuente)
+        plt.ylabel('Grado de equiparación de oportunidades: $\eta$', **fuente)
+        plt.xticks(**fuente)
+        plt.yticks(**fuente)
+        plt.figtext(source_pos[0], source_pos[1], source, **fuente)
+        plt.subplots_adjust(bottom=0.12)
+        plt.grid()
+        plt.savefig(desktop + f"/imagenes/des{j}.png", bbox_inches='tight')
+        # plt.show()
+        plt.close()
 
 
-# #   En cantidad de personas (para cada uno de los 17 años 2004-2020)
-# #   padre
-# for i in range(17):
-#     fig = plt.gcf()
-#     fig.set_size_inches(10, 6.5)
-#     plt.title("Grado de instrucción: Padre " + str(i+2004))
-#     plt.xlabel("Grado de instrucción")
-#     plt.ylabel("Total (en millones de personas)")
-#     plt.bar(etiquetas[0:-1], frec_p[i][0:-1], color=(0.0, 0.35, 0.6, 0.8))
-#     plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_" + str(i+2004) + ".png")
-#     plt.show()
-# #   madre
-# for i in range(17):
-#     fig = plt.gcf()
-#     fig.set_size_inches(10, 6.5)
-#     plt.title("Grado de instrucción: Madre " + str(i + 2004))
-#     plt.xlabel("Grado de instrucción")
-#     plt.ylabel("Total (en millones de personas)")
-#     plt.bar(etiquetas[0:-1], frec_m[i][0:-1], color=(0.4, 0.2, 0.6, 0.6))
-#     plt.savefig("C:/Users/adswf/Desktop/imagenes/madre_" + str(i+2004) + ".png")
-#     plt.show()
+
+
+# porgi()
+porgrupos()
+
+
+
+
+
+# sal_min    = [460, 460, 500, 530, 550, 550, 580, 675, 750, 750, 750, 750, 850, 850, 930, 930, 930]
+# var_pib_pc = [5.4, 6.7, 7.8, 8.4, 0.4, 7.5, 5.5, 5.4, 5.0, 1.4, 2.1, 2.4, 0.7, 2.0, 0.3, -12.4, 12.1]
+
+
+# #   Varación media (para el periodo 2004-2020) de la renta per cápita media (por grado de instrucción)
+# ypc_media_var_media = [round(sum(ypc_media_var[i])/len(ypc_media_var[i]), 2) for i in range(11)]
 #
-# #   En porcentaje (para cada uno de los 17 años 2004-2020)
-# #   padre
-# for i in range(17):
-#     fig = plt.gcf()
-#     fig.set_size_inches(10, 6.5)
-#     plt.title("Grado de instrucción: Padre " + str(i+2004))
-#     plt.xlabel("Grado de instrucción")
-#     plt.ylabel("% de la población")
-#     plt.bar(etiquetas[0:-1], porcen_p[i])
-#     plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_porcen_" + str(i+2004) + ".png")
-#     plt.show()
-# #   madre
-# for i in range(17):
-#     fig = plt.gcf()
-#     fig.set_size_inches(10, 6.5)
-#     plt.title("Grado de instrucción: Madre " + str(i+2004))
-#     plt.xlabel("Grado de instrucción")
-#     plt.ylabel("% de la población")
-#     plt.bar(etiquetas[0:-1], porcen_m[i], color=(0.4, 0.2, 0.6, 0.6))
-#     plt.savefig("C:/Users/adswf/Desktop/imagenes/madre_porcen_" + str(i+2004) + ".png")
-#     plt.show()
-
-
-
-
-#   Función de distribución acumulada
-
-for an in range(17):
-    fig = plt.gcf()
-    fig.set_size_inches(10, 6.5)
-    data = np.array(ypc_gi_p[0][an])
-    x = np.sort(data)
-    y = np.arange(len(ypc_gi_p[0][an])) / float(len(ypc_gi_p[0][an]))
-    plt.plot(x, y, marker='o', label="sn", color=(0.1, 0.2, 0.8, 0.2))
-
-    data = np.array(ypc_gi_p[4][an])
-    x = np.sort(data)
-    y = np.arange(len(ypc_gi_p[4][an])) / float(len(ypc_gi_p[4][an]))
-    plt.plot(x, y, marker='o', label="sc", color=(0.1, 0.2, 0.6, 0.2))
-
-    data = np.array(ypc_gi_p[8][an])
-    x = np.sort(data)
-    y = np.arange(len(ypc_gi_p[8][an])) / float(len(ypc_gi_p[8][an]))
-    plt.plot(x, y, marker='o', label="suc", color=(0.1, 0.2, 0.4, 0.4))
-
-    plt.xlabel('Ingreso medio en soles')
-    plt.ylabel('Distribución acumulada')
-    plt.legend()
-    plt.xlim([0, 10000])
-    plt.title('Función de distribución acumulada para el ingreso\npor grado de estudios del padre: ' + str(2004+an))
-    plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_porcen_fundis_" + str(2004+an) + ".png")
-    plt.show()
-
-
-
-#   Varación media (para el periodo 2004-2020) de la renta per cápita media (por grado de instrucción)
-ypc_media_var_media = [round(sum(ypc_media_var[i])/len(ypc_media_var[i]), 2) for i in range(11)]
-
-etiquetas2 = etiquetas[:-2] + ["media"]
-ypc_media_var_media = ypc_media_var_media[:-2] + [round(sum(ypc_media_var_media)/len(ypc_media_var_media), 2)]
-
-#   grafico de barras crecimiento en los ingresos por grado de instruccion crecimiento promedio 2004-2020
-
-# fig = plt.gcf()
-# fig.set_size_inches(10, 6.5)
-# plt.title("Crecimiento del ingreso medio para el periodo 2004-2020")
-# plt.xlabel("Grado de instrucción")
-# plt.ylabel("Crecimiento % promedio")
-# plt.bar(etiquetas2, ypc_media_var_media, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
+# etiquetas2 = etiquetas[:-2] + ["media"]
+# ypc_media_var_media = ypc_media_var_media[:-2] + [round(sum(ypc_media_var_media)/len(ypc_media_var_media), 2)]
+#
+# #   grafico de barras crecimiento en los ingresos por grado de instruccion crecimiento promedio 2004-2020
+#
+# # fig = plt.gcf()
+# # fig.set_size_inches(10, 6.5)
+# # plt.title("Crecimiento del ingreso medio para el periodo 2004-2020")
+# # plt.xlabel("Grado de instrucción")
+# # plt.ylabel("Crecimiento % promedio")
+# # plt.bar(etiquetas2, ypc_media_var_media, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
+# #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
+# #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
+# #                                                 (0.1, 0.3, 0.6, 0.9)])
+# # plt.savefig("C:/Users/pc/Desktop/imagenes/padre_crecimiento_medio1.png")
+# # plt.show()
+#
+#
+# x = np.arange(len(etiquetas2))
+# width = 0.8
+# fig, ax = plt.subplots()
+# rects1 = ax.bar(x, ypc_media_var_media, width, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
 #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
 #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
 #                                                 (0.1, 0.3, 0.6, 0.9)])
-# plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_crecimiento_medio1.png")
+# fig.set_size_inches(10, 6.5)
+# plt.title("Crecimiento del ingreso medio para el periodo 2004-2020 por grado de instrucción del padre")
+# plt.xlabel("Grado de instrucción")
+# plt.ylabel("Crecimiento % del ingreso medio")
+# ax.set_xticks(x)
+# ax.set_xticklabels(etiquetas2)
+# ax.bar_label(rects1)
+# fig.tight_layout()
+# plt.savefig("C:/Users/pc/Desktop/imagenes/padre_crecimiento_medio2.png")
 # plt.show()
 
 
-x = np.arange(len(etiquetas2))
-width = 0.8
-fig, ax = plt.subplots()
-rects1 = ax.bar(x, ypc_media_var_media, width, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-                                                (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-                                                (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-                                                (0.1, 0.3, 0.6, 0.9)])
-fig.set_size_inches(10, 6.5)
-plt.title("Crecimiento del ingreso medio para el periodo 2004-2020 por grado de instrucción del padre")
-plt.xlabel("Grado de instrucción")
-plt.ylabel("Crecimiento % del ingreso medio")
-ax.set_xticks(x)
-ax.set_xticklabels(etiquetas2)
-ax.bar_label(rects1)
-fig.tight_layout()
-plt.savefig("C:/Users/adswf/Desktop/imagenes/padre_crecimiento_medio2.png")
-plt.show()
-
-
-
-# plt.bar(gi[:-1], porc_padre_2004)
-# plt.xticks(gi[:-1], [textwrap.fill(i.capitalize(), width=17) for i in gi[:-1]], rotation="vertical", **fuente)
-# plt.subplots_adjust(bottom=0.4, top=0.90)
-# plt.show()
-
-
-#     # Grupo 1: Sin nivel
-#     for i in range(inicio, fin + 1):
-#         globals()[f'enaho{i}g1'] = enaho[(enaho['aÑo'] == i) & (enaho['p45_1'] == gi[0])]
-
-#     # Grupo 2: Con primaria
-#     for i in range(inicio, fin + 1):
-#         globals()[f'enaho{i}g2'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[1]) | (enaho['p45_1'] == gi[2]))]
-
-#     # Grupo 3: Con secundaria
-#     for i in range(inicio, fin + 1):
-#         globals()[f'enaho{i}g3'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[3]) | (enaho['p45_1'] == gi[4]))]
-
-#     # Grupo 4: Superior no universitaria
-#     for i in range(inicio, fin + 1):
-#         globals()[f'enaho{i}g4'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[5]) | (enaho['p45_1'] == gi[6]))]
-
-#     # Grupo 5: Superior universitaria
-#     for i in range(inicio, fin + 1):
-#         globals()[f'enaho{i}g5'] = enaho[(enaho['aÑo'] == i) & ((enaho['p45_1'] == gi[7]) | (enaho['p45_1'] == gi[8]))]
-
-
-# print(np.average(enaho["ypc"], weights=enaho["factor07"]))
-# print(robustats.weighted_median(enaho["ypc"], weights=enaho["factor07"]))
-# print(newenaho["ypc"].mean())
-# print(newenaho["ypc"].median())
-
-# for i in periodo_i:
-#     enaho.loc[enaho["aÑo"] == i, "fams_w"] = enaho["factor07"][enaho["aÑo"] == i].sum()
-#     enaho.loc[enaho["aÑo"] == i, "muestra"] = enaho[enaho["aÑo"] == i].shape[0]
 
 
 
@@ -1515,88 +533,34 @@ plt.show()
 
 
 
-def porgrupos1():
-# 
-#     # Grupo 1: Sin nivel
-#     g1 = {key: value for (key, value) in
-#           zip([f"{i}g1" for i in periodo_i],
-#               [enaho[(enaho["aÑo"] == i) & (enaho["gimax"] == gi[0])]
-#                for i in periodo_i])}
-# 
-#     # Grupo 2: Con primaria
-#     g2 = {key: value for (key, value) in
-#           zip([f"{i}g2" for i in periodo_i],
-#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[1]) | (enaho["gimax"] == gi[2]))]
-#                for i in periodo_i])}
-# 
-#     # Grupo 3: Con secundaria
-#     g3 = {key: value for (key, value) in
-#           zip([f"{i}g3" for i in periodo_i],
-#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[3]) | (enaho["gimax"] == gi[4]))]
-#                for i in periodo_i])}
-# 
-#     # Grupo 4: Superior no universitaria
-#     g4 = {key: value for (key, value) in
-#           zip([f"{i}g4" for i in periodo_i],
-#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[5]) | (enaho["gimax"] == gi[6]))]
-#                for i in periodo_i])}
-# 
-#     # Grupo 5: Superior universitaria
-#     g5 = {key: value for (key, value) in
-#           zip([f"{i}g5" for i in periodo_i],
-#               [enaho[(enaho["aÑo"] == i) & ((enaho["gimax"] == gi[7]) | (enaho["gimax"] == gi[8]))]
-#                for i in periodo_i])}
-# 
-#     enahobygroups = g1 | g2 | g3 | g4 | g5
-# 
-#     df_yfam_medio = pd.DataFrame(
-#         {"Año": periodo_s,
-#          "0": [round(i) for i in [np.average(enahobygroups[f"{i}g1"]["yfam"], weights=enahobygroups[f"{i}g1"]["factor07"]) for i in periodo_i]],
-#          "1": [round(i) for i in [np.average(enahobygroups[f"{i}g2"]["yfam"], weights=enahobygroups[f"{i}g2"]["factor07"]) for i in periodo_i]],
-#          "2": [round(i) for i in [np.average(enahobygroups[f"{i}g3"]["yfam"], weights=enahobygroups[f"{i}g3"]["factor07"]) for i in periodo_i]],
-#          "3": [round(i) for i in [np.average(enahobygroups[f"{i}g4"]["yfam"], weights=enahobygroups[f"{i}g4"]["factor07"]) for i in periodo_i]],
-#          "4": [round(i) for i in [np.average(enahobygroups[f"{i}g5"]["yfam"], weights=enahobygroups[f"{i}g5"]["factor07"]) for i in periodo_i]]})
-# 
-#     plt.figure(figsize=figsizes)
-#     for i in range(len(df_yfam_medio.columns) - 1):
-#         plt.plot(df_yfam_medio["Año"], df_yfam_medio[f"{i}"], label=grupos[i], marker=marcadores[i])
-#     plt.plot(df_yfam_medio["Año"], yfam_medio, label="Ingreso medio")
-#     plt.title("Ingreso medio del hogar por grado de instrucción del padre más instruido del jefe de hogar", **fuente)
-#     plt.xlabel("Año", **fuente)
-#     plt.ylabel("Ingreso mensual familiar (en soles)", **fuente)
-#     plt.xticks(**fuente)
-#     plt.yticks(**fuente)
-#     plt.legend(prop=font_manager.FontProperties(family=fuente["fontname"]))
-#     plt.show()
-# 
-#     f1 = {key: value for (key, value) in
-#           zip([f"padre{i}" for i in periodo_i],
-#               [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_1"] == gi[0]]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[1]) | (enahoyears[f"{i}"]["p45_1"] == gi[2])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[3]) | (enahoyears[f"{i}"]["p45_1"] == gi[4])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[5]) | (enahoyears[f"{i}"]["p45_1"] == gi[6])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_1"] == gi[7]) | (enahoyears[f"{i}"]["p45_1"] == gi[8])]["factor07"].sum()]
-#                for i in periodo_i])}
-#     f2 = {key: value for (key, value) in
-#           zip([f"madre{i}" for i in periodo_i],
-#               [[enahoyears[f"{i}"][enahoyears[f"{i}"]["p45_2"] == gi[0]]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[1]) | (enahoyears[f"{i}"]["p45_2"] == gi[2])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[3]) | (enahoyears[f"{i}"]["p45_2"] == gi[4])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[5]) | (enahoyears[f"{i}"]["p45_2"] == gi[6])]["factor07"].sum(),
-#                 enahoyears[f"{i}"][(enahoyears[f"{i}"]["p45_2"] == gi[7]) | (enahoyears[f"{i}"]["p45_2"] == gi[8])]["factor07"].sum()]
-#                for i in periodo_i])}
-#     frecuencias = f1 | f2
-# 
-#     p1 = {key: value for (key, value) in
-#           zip([f"padre{i}" for i in periodo_i],
-#               [[round(j*100/sum(frecuencias[f"padre{i}"]), 1) for j in frecuencias[f"padre{i}"]]
-#                for i in periodo_i])}
-#     p2 = {key: value for (key, value) in
-#           zip([f"madre{i}" for i in periodo_i],
-#               [[round(j*100/sum(frecuencias[f"madre{i}"]), 1) for j in frecuencias[f"madre{i}"]]
-#                for i in periodo_i])}
-#     porcentajes = p1 | p2
-# 
-#     barchars(porcentajes, "grupos", grupos)
 
+# var_H = [weighted_vals(pesos=enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
+# tam = [enahobygroups[f"{j}g{i + 1}"]["factor07"].sum() for i in range(len(grupos2))]
+# var_H = [(((enahobygroups[f"{j}g{i + 1}"]["yfam"] - medias[i])**2)*enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
+# var_H = sum([var_H[i].sum()/tam[i] for i in range(len(grupos2))])
+# print(var_H)
+# #
+# sizes = [enahobygroups[f"{j}g{i + 1}"]["yfam"].size for i in range(len(grupos2))]
+# wm = [np.average(enahobygroups[f"{j}g{i + 1}"]["yfam"], weights=enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
+#
+# x1 = enahobygroups[f"{j}g{1}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
+# x2 = enahobygroups[f"{j}g{2}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
+# x3 = enahobygroups[f"{j}g{3}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
+# x4 = enahobygroups[f"{j}g{4}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
+#
+# w1 = enahobygroups[f"{j}g{1}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
+# w2 = enahobygroups[f"{j}g{2}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
+# w3 = enahobygroups[f"{j}g{3}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
+# w4 = enahobygroups[f"{j}g{4}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
+#
+# covs = np.average((x1-wm[0])*(x2-wm[1]), axis=0, weights=w1) + \
+#        np.average((x1-wm[0])*(x3-wm[2]), axis=0, weights=w1) + \
+#        np.average((x1-wm[0])*(x4-wm[3]), axis=0, weights=w1) + \
+#        np.average((x2-wm[1])*(x3-wm[2]), axis=0, weights=w2) + \
+#        np.average((x2-wm[1])*(x4-wm[3]), axis=0, weights=w2) + \
+#        np.average((x3-wm[2])*(x4-wm[3]), axis=0, weights=w3)
+#
+#
+#
+# var_H = sum(var_H) + 2*covs
 
