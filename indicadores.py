@@ -7,7 +7,6 @@ import textwrap
 import weightedstats as ws
 
 
-
 pd.set_option('display.max_columns', None)
 
 desktop = "C:/Users/pc/Desktop/"
@@ -31,7 +30,7 @@ departamentos = ["Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Ca
                  "Madre de Dios", "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", "Tumbes",
                  "Ucayali"]
 
-departamentosISO = ["AMA", "ANC", "APU", "ARE", "CAJ", "CAL", "CUS",
+departamentosISO = ["AMA", "ANC", "APU", "AYA", "ARE", "CAJ", "CAL", "CUS",
                     "HUV", "HUC", "ICA", "JUN", "LAL", "LAM", "LIM", "LOR",
                     "MDD", "MOQ", "PAS", "PIU", "PUN", "SAM", "TAC", "TUM",
                     "UCA"]
@@ -473,94 +472,4 @@ def porgrupos():
 
 # porgi()
 porgrupos()
-
-
-
-
-
-# sal_min    = [460, 460, 500, 530, 550, 550, 580, 675, 750, 750, 750, 750, 850, 850, 930, 930, 930]
-# var_pib_pc = [5.4, 6.7, 7.8, 8.4, 0.4, 7.5, 5.5, 5.4, 5.0, 1.4, 2.1, 2.4, 0.7, 2.0, 0.3, -12.4, 12.1]
-
-
-# #   Varación media (para el periodo 2004-2020) de la renta per cápita media (por grado de instrucción)
-# ypc_media_var_media = [round(sum(ypc_media_var[i])/len(ypc_media_var[i]), 2) for i in range(11)]
-#
-# etiquetas2 = etiquetas[:-2] + ["media"]
-# ypc_media_var_media = ypc_media_var_media[:-2] + [round(sum(ypc_media_var_media)/len(ypc_media_var_media), 2)]
-#
-# #   grafico de barras crecimiento en los ingresos por grado de instruccion crecimiento promedio 2004-2020
-#
-# # fig = plt.gcf()
-# # fig.set_size_inches(10, 6.5)
-# # plt.title("Crecimiento del ingreso medio para el periodo 2004-2020")
-# # plt.xlabel("Grado de instrucción")
-# # plt.ylabel("Crecimiento % promedio")
-# # plt.bar(etiquetas2, ypc_media_var_media, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-# #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-# #                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-# #                                                 (0.1, 0.3, 0.6, 0.9)])
-# # plt.savefig("C:/Users/pc/Desktop/imagenes/padre_crecimiento_medio1.png")
-# # plt.show()
-#
-#
-# x = np.arange(len(etiquetas2))
-# width = 0.8
-# fig, ax = plt.subplots()
-# rects1 = ax.bar(x, ypc_media_var_media, width, color=[(0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-#                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-#                                                 (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5), (0.1, 0.3, 0.8, 0.5),
-#                                                 (0.1, 0.3, 0.6, 0.9)])
-# fig.set_size_inches(10, 6.5)
-# plt.title("Crecimiento del ingreso medio para el periodo 2004-2020 por grado de instrucción del padre")
-# plt.xlabel("Grado de instrucción")
-# plt.ylabel("Crecimiento % del ingreso medio")
-# ax.set_xticks(x)
-# ax.set_xticklabels(etiquetas2)
-# ax.bar_label(rects1)
-# fig.tight_layout()
-# plt.savefig("C:/Users/pc/Desktop/imagenes/padre_crecimiento_medio2.png")
-# plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# var_H = [weighted_vals(pesos=enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
-# tam = [enahobygroups[f"{j}g{i + 1}"]["factor07"].sum() for i in range(len(grupos2))]
-# var_H = [(((enahobygroups[f"{j}g{i + 1}"]["yfam"] - medias[i])**2)*enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
-# var_H = sum([var_H[i].sum()/tam[i] for i in range(len(grupos2))])
-# print(var_H)
-# #
-# sizes = [enahobygroups[f"{j}g{i + 1}"]["yfam"].size for i in range(len(grupos2))]
-# wm = [np.average(enahobygroups[f"{j}g{i + 1}"]["yfam"], weights=enahobygroups[f"{j}g{i + 1}"]["factor07"]) for i in range(len(grupos2))]
-#
-# x1 = enahobygroups[f"{j}g{1}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
-# x2 = enahobygroups[f"{j}g{2}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
-# x3 = enahobygroups[f"{j}g{3}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
-# x4 = enahobygroups[f"{j}g{4}"]["yfam"].iloc[0:min(sizes)].reset_index()["yfam"].to_frame()
-#
-# w1 = enahobygroups[f"{j}g{1}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
-# w2 = enahobygroups[f"{j}g{2}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
-# w3 = enahobygroups[f"{j}g{3}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
-# w4 = enahobygroups[f"{j}g{4}"]["factor07"].iloc[0:min(sizes)].reset_index()["factor07"].to_frame()
-#
-# covs = np.average((x1-wm[0])*(x2-wm[1]), axis=0, weights=w1) + \
-#        np.average((x1-wm[0])*(x3-wm[2]), axis=0, weights=w1) + \
-#        np.average((x1-wm[0])*(x4-wm[3]), axis=0, weights=w1) + \
-#        np.average((x2-wm[1])*(x3-wm[2]), axis=0, weights=w2) + \
-#        np.average((x2-wm[1])*(x4-wm[3]), axis=0, weights=w2) + \
-#        np.average((x3-wm[2])*(x4-wm[3]), axis=0, weights=w3)
-#
-#
-#
-# var_H = sum(var_H) + 2*covs
 
